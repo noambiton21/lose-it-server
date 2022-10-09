@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
+const { Schema, model } = require("mongoose");
 
-const Schema = mongoose.Schema;
+// const Schema = mongoose.Schema;
 
 const weightHistorySchema = new Schema({
   userEmail: { type: String, required: true },
@@ -8,4 +9,6 @@ const weightHistorySchema = new Schema({
   weight: { type: Number, required: true },
 });
 
-module.exports = mongoose.model("WeightHistory", weightHistorySchema);
+// module.exports = mongoose.model("WeightHistory", weightHistorySchema);
+
+module.exports = model("WeightHistory", weightHistorySchema);
