@@ -8,7 +8,7 @@ const User = require("../models/user");
 const WeightHistory = require("../models/weightHistory");
 
 const getCurrentWeight = async (userEmail) => {
-  const weightHistory = await WeightHistory.findAll({
+  const weightHistory = await WeightHistory.find({
     where: { userEmail },
   });
   const currentWeight = weightHistory.reduce((prev, curr) => {
@@ -59,14 +59,12 @@ const updateUser = async (req, res, next) => {
     if (user) {
       const userData = req.body;
 
-      await User.updateOne(
-        { ...userData, onboarded: true },
-        {
-          where: {
-            email: user.email,
-          },
-        }
-      );
+      console.table(userData);
+      console.log(user.email);
+
+      let existingUser = await User.findOne({ email: user.email });
+
+      await existingUser.updateOne({ ...userData, onboarded: true });
       await WeightHistory.create({
         userEmail: user.email,
         timestamp: new Date(),
@@ -232,6 +230,7 @@ const login = async (req, res, next) => {
     );
     return next(error);
   }
+  req.session.user = existingUser;
   res.json({
     userId: existingUser.id,
     email: existingUser.email,
@@ -245,7 +244,7 @@ const getWeightHistory = async (req, res, next) => {
   try {
     const { email } = req.session.user;
 
-    res.json(await WeightHistory.findAll({ where: { userEmail: email } }));
+    res.json(await WeightHistory.find({ where: { userEmail: email } }));
   } catch (ex) {
     next(ex);
   }

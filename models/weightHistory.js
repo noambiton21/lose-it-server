@@ -5,8 +5,8 @@ const { Schema, model } = require("mongoose");
 
 const weightHistorySchema = new Schema({
   userEmail: { type: String, required: true },
-  timestamp: { type: Date, required: true },
-  weight: { type: Number, required: true },
+  timestamp: { type: Date },
+  weight: { type: Number },
 });
 
 // module.exports = mongoose.model("WeightHistory", weightHistorySchema);
