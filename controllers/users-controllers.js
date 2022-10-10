@@ -9,7 +9,7 @@ const WeightHistory = require("../models/weightHistory");
 
 const getCurrentWeight = async (userEmail) => {
   const weightHistory = await WeightHistory.find({
-    where: { userEmail },
+    userEmail: userEmail,
   });
   const currentWeight = weightHistory.reduce((prev, curr) => {
     return prev.timestamp > curr.timestamp ? prev : curr;
@@ -40,7 +40,6 @@ const getUser = async (req, res, next) => {
         req.session.user && req.session.user.onboarded
           ? await calculateCalorieGoal(req.session.user)
           : 0;
-
       res.json({
         ...req.session.user,
         calorieGoal,
@@ -81,19 +80,19 @@ const updateUser = async (req, res, next) => {
   }
 };
 
-const getUsers = async (req, res, next) => {
-  let users;
-  try {
-    users = await User.find({}, "-password");
-  } catch (err) {
-    const error = new HttpError(
-      "Fetching users failed, please try again later.",
-      500
-    );
-    return next(error);
-  }
-  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
-};
+// const getUsers = async (req, res, next) => {
+//   let users;
+//   try {
+//     users = await User.find({}, "-password");
+//   } catch (err) {
+//     const error = new HttpError(
+//       "Fetching users failed, please try again later.",
+//       500
+//     );
+//     return next(error);
+//   }
+//   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
+// };
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);

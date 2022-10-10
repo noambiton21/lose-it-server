@@ -3,6 +3,7 @@ const config = require("../config.json");
 const MealOption = require("../models/mealOption");
 
 const getFood = async (req, res, next) => {
+  console.log("im hereeeeeeeeee");
   try {
     const { query } = req.query;
     const foodList = await axios
@@ -23,7 +24,7 @@ const getFood = async (req, res, next) => {
 
 const getMealOption = async (req, res, next) => {
   try {
-    const mealOptions = await MealOption.findAll({ order: ["priority"] });
+    const mealOptions = await MealOption.find({ order: ["priority"] });
 
     res.json(mealOptions);
   } catch (ex) {
