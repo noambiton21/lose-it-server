@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
+require("dotenv").config({ path: "../vars/vars.env" });
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
@@ -80,20 +81,6 @@ const updateUser = async (req, res, next) => {
   }
 };
 
-// const getUsers = async (req, res, next) => {
-//   let users;
-//   try {
-//     users = await User.find({}, "-password");
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Fetching users failed, please try again later.",
-//       500
-//     );
-//     return next(error);
-//   }
-//   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
-// };
-
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -154,7 +141,7 @@ const signup = async (req, res, next) => {
   try {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
-      "supersecret_dont_share",
+      process.env.jwt_secret,
       { expiresIn: "1h" }
     );
   } catch (err) {
@@ -219,7 +206,7 @@ const login = async (req, res, next) => {
   try {
     token = jwt.sign(
       { userId: existingUser.id, email: existingUser.email },
-      "supersecret_dont_share",
+      process.env.jwt_secret,
       { expiresIn: "1h" }
     );
   } catch (err) {
@@ -243,7 +230,7 @@ const getWeightHistory = async (req, res, next) => {
   try {
     const { email } = req.session.user;
 
-    res.json(await WeightHistory.find({ where: { userEmail: email } }));
+    res.json(await WeightHistory.find({ userEmail: email }));
   } catch (ex) {
     next(ex);
   }

@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get("/food", foodControllers.getFood);
 
+router.get("/food-calories", foodControllers.getFoodCalories);
+
 router.get("/meal-options", foodControllers.getMealOption);
 
 // router.post("/meal-options", foodControllers.addMealOption);

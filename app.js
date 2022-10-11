@@ -1,10 +1,11 @@
-const fs = require("fs");
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const session = require("express-session");
+require("dotenv").config({ path: "./vars/vars.env" });
+
+const source = process.env.DATABASE_URL;
 
 const foodRoutes = require("./routes/food-routes");
 const userRoutes = require("./routes/users-routes");
@@ -14,8 +15,6 @@ const app = express();
 const port = process.env.PORT || 1337;
 
 app.use(bodyParser.json());
-
-// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -30,7 +29,7 @@ app.use((req, res, next) => {
 
 app.use(
   session({
-    secret: "supersecret_dont_share",
+    secret: process.env.jwt_secret,
   })
 );
 
@@ -64,13 +63,10 @@ app.use((req, res, next) => {
 });
 
 mongoose
-  .connect(
-    `mongodb+srv://noam1234:1234@cluster0.jkfltoq.mongodb.net/?retryWrites=true&w=majority`,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(source, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     app.listen(port);
     console.log(`[server]: Server is running at https://localhost:${port}`);

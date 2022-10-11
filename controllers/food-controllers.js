@@ -1,6 +1,11 @@
 const axios = require("axios");
 const config = require("../config.json");
 const MealOption = require("../models/mealOption");
+const nutritionix = require("nutritionix-api");
+
+const YOUR_APP_ID = "2bcc2d2c";
+const YOUR_API_KEY = "de3bf9b51b5786a36dd96c55bbefb787";
+nutritionix.init(YOUR_APP_ID, YOUR_API_KEY);
 
 const getFood = async (req, res, next) => {
   try {
@@ -14,8 +19,25 @@ const getFood = async (req, res, next) => {
         },
       })
       .then((response) => response.data.common);
-
     res.json(foodList);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
+const getFoodCalories = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+    let calories = 0;
+    nutritionix.natural.search(query).then((result) => {
+      if (result.message) {
+        calories = 0;
+      } else {
+        calories = result.foods[0].nf_calories;
+      }
+      console.log(calories);
+      res.json(calories);
+    });
   } catch (ex) {
     next(ex);
   }
@@ -50,3 +72,4 @@ const addMealOption = async (req, res, next) => {
 exports.getMealOption = getMealOption;
 exports.getFood = getFood;
 exports.addMealOption = addMealOption;
+exports.getFoodCalories = getFoodCalories;
