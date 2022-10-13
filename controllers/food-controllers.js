@@ -1,6 +1,7 @@
 const axios = require("axios");
 const config = require("../config.json");
 const MealOption = require("../models/mealOption");
+const Meal = require("../models/meal");
 const nutritionix = require("nutritionix-api");
 
 const YOUR_APP_ID = "2bcc2d2c";
@@ -69,7 +70,55 @@ const addMealOption = async (req, res, next) => {
   }
 };
 
+const addMeal = async (req, res, next) => {
+  try {
+    const { email } = req.session.user;
+    const { foodName, calories, servingSize, mealType } = req.body;
+    const date = new Date().toISOString().slice(0, 10);
+
+    let existMeal = await Meal.findOne({
+      mealType: mealType,
+      createAtDate: date,
+      foodName: foodName,
+    });
+    if (!existMeal) {
+      if (foodName !== "") {
+        await Meal.create({
+          userEmail: email,
+          foodName,
+          calories,
+          servingSize,
+          mealType,
+          createAtDate: date,
+        });
+        res.send();
+      }
+    }
+  } catch (ex) {
+    next(ex);
+  }
+};
+
+const getMeal = async (req, res, next) => {
+  try {
+    const { email } = req.session.user;
+    const { mealType, date } = req.query;
+
+    let existMeal = await Meal.find({
+      mealType: mealType,
+      createAtDate: date,
+      userEmail: email,
+    });
+    console.log(existMeal);
+    res.json(existMeal);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 exports.getMealOption = getMealOption;
 exports.getFood = getFood;
 exports.addMealOption = addMealOption;
 exports.getFoodCalories = getFoodCalories;
+exports.addMeal = addMeal;
+exports.getMeal = getMeal;

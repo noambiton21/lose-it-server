@@ -10,6 +10,8 @@ router.get("/food-calories", foodControllers.getFoodCalories);
 
 router.get("/meal-options", foodControllers.getMealOption);
 
-// router.post("/meal-options", foodControllers.addMealOption);
+router.post("/meal", foodControllers.addMeal);
+
+router.get("/meal", foodControllers.getMeal);
 
 module.exports = router;
