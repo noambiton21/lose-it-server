@@ -14,4 +14,8 @@ router.post("/meal", foodControllers.addMeal);
 
 router.get("/meal", foodControllers.getMeal);
 
+router.get("/mealsCalories", foodControllers.getMealsCalories);
+
+router.get("/totalDayCalories", foodControllers.getTotalDayCalories);
+
 module.exports = router;

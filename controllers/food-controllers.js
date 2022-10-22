@@ -36,7 +36,6 @@ const getFoodCalories = async (req, res, next) => {
       } else {
         calories = result.foods[0].nf_calories;
       }
-      console.log(calories);
       res.json(calories);
     });
   } catch (ex) {
@@ -46,7 +45,7 @@ const getFoodCalories = async (req, res, next) => {
 
 const getMealOption = async (req, res, next) => {
   try {
-    let mealOptions = await MealOption.find({});
+    const mealOptions = await MealOption.find({});
     mealOptions.sort((a, b) => a.priority - b.priority);
     res.json(mealOptions);
   } catch (ex) {
@@ -74,7 +73,7 @@ const addMeal = async (req, res, next) => {
   try {
     const { email } = req.session.user;
     const { foodName, calories, servingSize, mealType } = req.body;
-    const date = new Date().toISOString().slice(0, 10);
+    const date = new Date().toLocaleDateString("en-GB");
 
     let existMeal = await Meal.findOne({
       mealType: mealType,
@@ -109,8 +108,62 @@ const getMeal = async (req, res, next) => {
       createAtDate: date,
       userEmail: email,
     });
-    console.log(existMeal);
     res.json(existMeal);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
+const getMealCalories = async (mealType, date, email) => {
+  let existMeal = await Meal.find({
+    mealType: mealType,
+    createAtDate: date,
+    userEmail: email,
+  });
+  let sumCalories = 0;
+  sumCalories = existMeal.reduce((accumulator, food) => {
+    return accumulator + food.calories;
+  }, 0);
+  return sumCalories;
+};
+
+const getMealsCalories = async (req, res, next) => {
+  try {
+    let mealOptions = await MealOption.find({});
+    mealOptions.sort((a, b) => a.priority - b.priority);
+
+    const { email } = req.session.user;
+    const { date } = req.query;
+
+    const mealsCalories = await Promise.all(
+      mealOptions.map(async (mealOption) => {
+        const calories = await getMealCalories(mealOption.type, date, email);
+        return {
+          ...mealOption,
+          totalCalories: calories,
+        };
+      })
+    );
+
+    res.json(mealsCalories);
+  } catch (ex) {
+    next(ex);
+  }
+};
+const getTotalDayCalories = async (req, res, next) => {
+  try {
+    const { email } = req.session.user;
+    const date = new Date().toLocaleDateString("en-GB");
+    let existMeal = await Meal.find({
+      createAtDate: date,
+      userEmail: email,
+    });
+    let sumCalories = 0;
+    sumCalories = existMeal.reduce((accumulator, food) => {
+      return accumulator + food.calories;
+    }, 0);
+
+    res.json(sumCalories);
   } catch (ex) {
     next(ex);
   }
@@ -122,3 +175,5 @@ exports.addMealOption = addMealOption;
 exports.getFoodCalories = getFoodCalories;
 exports.addMeal = addMeal;
 exports.getMeal = getMeal;
+exports.getMealsCalories = getMealsCalories;
+exports.getTotalDayCalories = getTotalDayCalories;
