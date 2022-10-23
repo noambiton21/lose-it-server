@@ -114,6 +114,21 @@ const getMeal = async (req, res, next) => {
   }
 };
 
+const getMeals = async (req, res, next) => {
+  try {
+    const { email } = req.session.user;
+    const { date } = req.query;
+
+    let existMeals = await Meal.find({
+      createAtDate: date,
+      userEmail: email,
+    });
+    res.json(existMeals);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 const getMealCalories = async (mealType, date, email) => {
   let existMeal = await Meal.find({
     mealType: mealType,
@@ -177,3 +192,4 @@ exports.addMeal = addMeal;
 exports.getMeal = getMeal;
 exports.getMealsCalories = getMealsCalories;
 exports.getTotalDayCalories = getTotalDayCalories;
+exports.getMeals = getMeals;

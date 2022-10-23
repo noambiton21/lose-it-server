@@ -14,6 +14,8 @@ router.post("/meal", foodControllers.addMeal);
 
 router.get("/meal", foodControllers.getMeal);
 
+router.get("/meals", foodControllers.getMeals);
+
 router.get("/mealsCalories", foodControllers.getMealsCalories);
 
 router.get("/totalDayCalories", foodControllers.getTotalDayCalories);
