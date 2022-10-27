@@ -72,14 +72,16 @@ const addMealOption = async (req, res, next) => {
 const addMeal = async (req, res, next) => {
   try {
     const { email } = req.session.user;
-    const { foodName, calories, servingSize, mealType } = req.body;
+    const { foodName, calories, servingSize, mealType, imageUrl } = req.body;
     const date = new Date().toLocaleDateString("en-GB");
 
-    let existMeal = await Meal.findOne({
+    const existMeal = await Meal.findOne({
       mealType: mealType,
       createAtDate: date,
       foodName: foodName,
+      userEmail: email,
     });
+
     if (!existMeal) {
       if (foodName !== "") {
         await Meal.create({
@@ -88,6 +90,7 @@ const addMeal = async (req, res, next) => {
           calories,
           servingSize,
           mealType,
+          imageUrl,
           createAtDate: date,
         });
         res.send();

@@ -8,6 +8,7 @@ const mealSchema = new Schema(
     servingSize: { type: Number },
     createAtDate: { type: String },
     mealType: { type: String },
+    imageUrl: { type: String },
   },
   {
     timestamps: true,

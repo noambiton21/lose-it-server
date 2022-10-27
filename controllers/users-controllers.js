@@ -7,6 +7,7 @@ require("dotenv").config({ path: "../vars/vars.env" });
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
 const WeightHistory = require("../models/weightHistory");
+const Workout = require("../models/workout");
 
 const getCurrentWeight = async (userEmail) => {
   const weightHistory = await WeightHistory.find({
@@ -36,6 +37,8 @@ const calculateCalorieGoal = async (user) => {
 
 const getUser = async (req, res, next) => {
   try {
+    //get token from the client
+    //decode the token and return the data (user without password)
     if (req.session.user) {
       const calorieGoal =
         req.session.user && req.session.user.onboarded
@@ -58,9 +61,6 @@ const updateUser = async (req, res, next) => {
     const user = req.session.user;
     if (user) {
       const userData = req.body;
-
-      console.table(userData);
-      console.log(user.email);
 
       let existingUser = await User.findOne({ email: user.email });
 
@@ -216,12 +216,12 @@ const login = async (req, res, next) => {
     );
     return next(error);
   }
-  req.session.user = existingUser;
+  req.session.user = existingUser; // delete
+  //return only token - same for register
   res.json({
     userId: existingUser.id,
     email: existingUser.email,
     token: token,
-    success: true,
     user: existingUser,
   });
 };
@@ -247,9 +247,51 @@ const addWeightHistory = async (req, res, next) => {
     next(ex);
   }
 };
+
+const getWorkout = async (req, res, next) => {
+  try {
+    console.log("work");
+    const { email } = req.session.user;
+    const date = new Date().toLocaleDateString("en-GB");
+    console.log(date);
+
+    let existWorkout = await Workout.find({
+      date: date,
+      userEmail: email,
+    });
+
+    console.log(existWorkout);
+
+    res.json(existWorkout);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
+const addWorkout = async (req, res, next) => {
+  try {
+    const { email } = req.session.user;
+    const { caloriesBurned, date, activity, workoutTime, heartRate } = req.body;
+
+    await Workout.create({
+      userEmail: email,
+      caloriesBurned,
+      date,
+      activity,
+      workoutTime,
+      heartRate,
+    });
+    res.send();
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 exports.getWeightHistory = getWeightHistory;
 exports.addWeightHistory = addWeightHistory;
 exports.updateUser = updateUser;
 exports.getUser = getUser;
 exports.signup = signup;
 exports.login = login;
+exports.addWorkout = addWorkout;
+exports.getWorkout = getWorkout;

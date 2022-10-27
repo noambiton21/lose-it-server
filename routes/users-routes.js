@@ -24,4 +24,8 @@ router.get("/user/weight-history", usersController.getWeightHistory);
 
 router.post("/user/weight-history", usersController.addWeightHistory);
 
+router.get("/user/workout", usersController.getWorkout);
+
+router.post("/user/workout", usersController.addWorkout);
+
 module.exports = router;
