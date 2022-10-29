@@ -33,6 +33,14 @@ app.use(
   })
 );
 
+app.use((error, req, res, next) => {
+  if (res.headerSent) {
+    return next(error);
+  }
+  res.status(error.code || 500);
+  res.json({ message: error.message || "An unknown error occurred!" });
+});
+
 const corsOptions = {
   origin: "http://localhost:3000",
   credentials: true,
@@ -40,22 +48,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use((req, res, next) => {
-  if (
-    req.session.user ||
-    req.path.includes("/login") ||
-    req.path.includes("/register") ||
-    req.path.endsWith("/user")
-  ) {
-    next();
-  } else {
-    res.status(401).send();
-  }
-});
-
 app.use("/v1", [userRoutes, foodRoutes]);
-// app.use("/api/food", foodRoutes);
-// app.use("/api/user", userRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError("Could not find this route.", 404);
