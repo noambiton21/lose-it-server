@@ -27,11 +27,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(
-//   session({
-//     secret: process.env.jwt_secret,
-//   })
-// );
+app.use(
+  session({
+    secret: process.env.jwt_secret,
+  })
+);
 
 app.use((error, req, res, next) => {
   res.status(error.code || 500);
