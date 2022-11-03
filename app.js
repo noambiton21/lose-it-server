@@ -27,11 +27,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  session({
-    secret: process.env.jwt_secret,
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.jwt_secret,
+//   })
+// );
 
 app.use((error, req, res, next) => {
   res.status(error.code || 500);
@@ -58,7 +58,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(process.env.PORT);
+    app.listen(process.env.PORT || 1337);
     console.log(`[server]: Server is running at https://localhost:${port}`);
   })
   .catch((err) => {
