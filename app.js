@@ -39,7 +39,7 @@ app.use((error, req, res, next) => {
 });
 
 const corsOptions = {
-  origin: "https://noambiton21.github.io/lose-it-frontend/",
+  origin: "https://noambiton21.github.io",
   credentials: true,
   optionSuccessStatus: 200,
 };
