@@ -35,7 +35,7 @@ const getFoodCalories = async (req, res, next) => {
       if (result.message) {
         calories = 0;
       } else {
-        calories = result.foods[0].nf_calories;
+        calories = result.foods[0];
       }
       res.json(calories);
     });
@@ -72,9 +72,19 @@ const addMealOption = async (req, res, next) => {
 
 const addMeal = async (req, res, next) => {
   try {
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
 
-    const { foodName, calories, servingSize, mealType, imageUrl } = req.body;
+    const {
+      foodName,
+      calories,
+      servingSize,
+      mealType,
+      imageUrl,
+      serving_unit,
+      nf_total_fat,
+      nf_protein,
+      nf_sugars,
+    } = req.body;
     const date = new Date().toLocaleDateString("en-GB");
 
     const existMeal = await Meal.findOne({
@@ -93,6 +103,10 @@ const addMeal = async (req, res, next) => {
           servingSize,
           mealType,
           imageUrl,
+          serving_unit,
+          nf_total_fat,
+          nf_protein,
+          nf_sugars,
           createAtDate: date,
         });
         res.send();
@@ -105,7 +119,7 @@ const addMeal = async (req, res, next) => {
 
 const getMeal = async (req, res, next) => {
   try {
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
     const { mealType, date } = req.query;
 
     let existMeal = await Meal.find({
@@ -121,7 +135,7 @@ const getMeal = async (req, res, next) => {
 
 const getMeals = async (req, res, next) => {
   try {
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
     const { date } = req.query;
 
     let existMeals = await Meal.find({
@@ -152,7 +166,7 @@ const getMealsCalories = async (req, res, next) => {
     let mealOptions = await MealOption.find({});
     mealOptions.sort((a, b) => a.priority - b.priority);
 
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
     const { date } = req.query;
 
     const mealsCalories = await Promise.all(

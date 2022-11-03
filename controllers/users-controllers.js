@@ -35,6 +35,18 @@ const calculateCalorieGoal = async (user) => {
   return Math.round(1.2 * BMR - 500);
 };
 
+const getUserWeight = async (req, res, next) => {
+  try {
+    let user = await User.findById(req.userData.userId);
+
+    const currentWeight = await getCurrentWeight(user.email);
+
+    res.json(currentWeight);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 const getUser = async (req, res, next) => {
   try {
     let existingUser = await User.findById(req.userData.userId);
@@ -57,7 +69,7 @@ const getUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    let user = await User.findOne({ _id: req.userData.userId });
+    let user = await User.findById(req.userData.userId);
     if (user) {
       const userData = req.body;
 
@@ -138,8 +150,8 @@ const signup = async (req, res, next) => {
   try {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
-      process.env.jwt_secret
-      // { expiresIn: "1h" }
+      process.env.jwt_secret,
+      { expiresIn: "10h" }
     );
   } catch (err) {
     const error = new HttpError(
@@ -150,8 +162,6 @@ const signup = async (req, res, next) => {
   }
 
   res.status(201).json({
-    userId: createdUser.id,
-    email: createdUser.email,
     token: token,
   });
 };
@@ -161,7 +171,7 @@ const login = async (req, res, next) => {
 
   let existingUser;
   try {
-    existingUser = await User.findOne({ email: email });
+    existingUser = await User.findOne({ email: email }).select("+password");
   } catch (err) {
     const error = new HttpError(
       "Logging in failed, please try again later.",
@@ -201,8 +211,8 @@ const login = async (req, res, next) => {
   try {
     token = jwt.sign(
       { userId: existingUser.id, email: existingUser.email },
-      process.env.jwt_secret
-      // { expiresIn: "1h" }
+      process.env.jwt_secret,
+      { expiresIn: "10h" }
     );
   } catch (err) {
     const error = new HttpError(
@@ -213,8 +223,6 @@ const login = async (req, res, next) => {
   }
 
   res.json({
-    userId: existingUser.id,
-    email: existingUser.email,
     token: token,
   });
 };
@@ -231,7 +239,7 @@ const getWeightHistory = async (req, res, next) => {
 
 const addWeightHistory = async (req, res, next) => {
   try {
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
     const { timestamp, weight } = req.body;
 
     await WeightHistory.create({ userEmail: email, timestamp, weight });
@@ -243,7 +251,7 @@ const addWeightHistory = async (req, res, next) => {
 
 const getWorkout = async (req, res, next) => {
   try {
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
     const date = new Date().toLocaleDateString("en-GB");
 
     let existWorkout = await Workout.find({
@@ -259,8 +267,13 @@ const getWorkout = async (req, res, next) => {
 
 const addWorkout = async (req, res, next) => {
   try {
-    const { email } = await User.findOne({ _id: req.userData.userId });
+    const { email } = await User.findById(req.userData.userId);
     const { caloriesBurned, date, activity, workoutTime, heartRate } = req.body;
+
+    if (activity === "") {
+      const error = new HttpError("No activity selected", 500);
+      return next(error);
+    }
 
     await Workout.create({
       userEmail: email,
@@ -284,3 +297,4 @@ exports.signup = signup;
 exports.login = login;
 exports.addWorkout = addWorkout;
 exports.getWorkout = getWorkout;
+exports.getUserWeight = getUserWeight;

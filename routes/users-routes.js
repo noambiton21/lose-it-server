@@ -31,4 +31,6 @@ router.get("/user/workout", usersController.getWorkout);
 
 router.post("/user/workout", usersController.addWorkout);
 
+router.get("/user/weight", usersController.getUserWeight);
+
 module.exports = router;
