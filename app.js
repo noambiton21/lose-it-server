@@ -39,7 +39,7 @@ app.use((error, req, res, next) => {
 });
 
 const corsOptions = {
-  origin: "https://noambiton21.github.io",
+  origin: "https://lose-it-client.herokuapp.com/",
   credentials: true,
   optionSuccessStatus: 200,
 };
