@@ -35,19 +35,30 @@ const calculateCalorieGoal = async (user) => {
   return Math.round(1.2 * BMR - 500);
 };
 
+const getUserWeight = async (req, res, next) => {
+  try {
+    let user = await User.findById(req.userData.userId);
+
+    const currentWeight = await getCurrentWeight(user.email);
+
+    res.json(currentWeight);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 const getUser = async (req, res, next) => {
   try {
-    //get token from the client
-    //decode the token and return the data (user without password)
-    if (req.session.user) {
+    let existingUser = await User.findById(req.userData.userId);
+
+    if (existingUser) {
       const calorieGoal =
-        req.session.user && req.session.user.onboarded
-          ? await calculateCalorieGoal(req.session.user)
+        existingUser && existingUser.onboarded
+          ? await calculateCalorieGoal(existingUser)
           : 0;
-      res.json({
-        ...req.session.user,
-        calorieGoal,
-      });
+      existingUser._doc.calorieGoal = calorieGoal;
+
+      res.json(existingUser);
     } else {
       res.json();
     }
@@ -58,7 +69,7 @@ const getUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const user = req.session.user;
+    let user = await User.findById(req.userData.userId);
     if (user) {
       const userData = req.body;
 
@@ -70,7 +81,6 @@ const updateUser = async (req, res, next) => {
         timestamp: new Date(),
         weight: userData.initialWeight,
       });
-      req.session.user = { ...user, ...userData, onboarded: true };
 
       res.json("ok");
     } else {
@@ -128,7 +138,6 @@ const signup = async (req, res, next) => {
 
   try {
     await createdUser.save();
-    req.session.user = { email, onboarded: false };
   } catch (err) {
     const error = new HttpError(
       "Signing up failed, please try again later.",
@@ -142,7 +151,7 @@ const signup = async (req, res, next) => {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
       process.env.jwt_secret,
-      { expiresIn: "1h" }
+      { expiresIn: "10h" }
     );
   } catch (err) {
     const error = new HttpError(
@@ -153,10 +162,7 @@ const signup = async (req, res, next) => {
   }
 
   res.status(201).json({
-    userId: createdUser.id,
-    email: createdUser.email,
     token: token,
-    success: true,
   });
 };
 
@@ -164,9 +170,8 @@ const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   let existingUser;
-
   try {
-    existingUser = await User.findOne({ email: email });
+    existingUser = await User.findOne({ email: email }).select("+password");
   } catch (err) {
     const error = new HttpError(
       "Logging in failed, please try again later.",
@@ -207,7 +212,7 @@ const login = async (req, res, next) => {
     token = jwt.sign(
       { userId: existingUser.id, email: existingUser.email },
       process.env.jwt_secret,
-      { expiresIn: "1h" }
+      { expiresIn: "10h" }
     );
   } catch (err) {
     const error = new HttpError(
@@ -216,19 +221,15 @@ const login = async (req, res, next) => {
     );
     return next(error);
   }
-  req.session.user = existingUser; // delete
-  //return only token - same for register
+
   res.json({
-    userId: existingUser.id,
-    email: existingUser.email,
     token: token,
-    user: existingUser,
   });
 };
 
 const getWeightHistory = async (req, res, next) => {
   try {
-    const { email } = req.session.user;
+    const { email } = await User.findById(req.userData.userId);
 
     res.json(await WeightHistory.find({ userEmail: email }));
   } catch (ex) {
@@ -238,7 +239,7 @@ const getWeightHistory = async (req, res, next) => {
 
 const addWeightHistory = async (req, res, next) => {
   try {
-    const { email } = req.session.user;
+    const { email } = await User.findById(req.userData.userId);
     const { timestamp, weight } = req.body;
 
     await WeightHistory.create({ userEmail: email, timestamp, weight });
@@ -250,17 +251,13 @@ const addWeightHistory = async (req, res, next) => {
 
 const getWorkout = async (req, res, next) => {
   try {
-    console.log("work");
-    const { email } = req.session.user;
+    const { email } = await User.findById(req.userData.userId);
     const date = new Date().toLocaleDateString("en-GB");
-    console.log(date);
 
     let existWorkout = await Workout.find({
       date: date,
       userEmail: email,
     });
-
-    console.log(existWorkout);
 
     res.json(existWorkout);
   } catch (ex) {
@@ -270,8 +267,13 @@ const getWorkout = async (req, res, next) => {
 
 const addWorkout = async (req, res, next) => {
   try {
-    const { email } = req.session.user;
+    const { email } = await User.findById(req.userData.userId);
     const { caloriesBurned, date, activity, workoutTime, heartRate } = req.body;
+
+    if (activity === "") {
+      const error = new HttpError("No activity selected", 500);
+      return next(error);
+    }
 
     await Workout.create({
       userEmail: email,
@@ -295,3 +297,4 @@ exports.signup = signup;
 exports.login = login;
 exports.addWorkout = addWorkout;
 exports.getWorkout = getWorkout;
+exports.getUserWeight = getUserWeight;

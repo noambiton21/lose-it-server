@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config({ path: "../vars/vars.env" });
+const User = require("../models/user");
 
 const HttpError = require("../models/http-error");
 
@@ -8,12 +9,14 @@ module.exports = (req, res, next) => {
     return next();
   }
   try {
-    const token = req.headers.authorization.split(" ")[1]; // Authorization: 'Bearer TOKEN'
+    const token = req.headers.authorization.split(" ")[1];
     if (!token) {
       throw new Error("Authentication failed!");
     }
     const decodedToken = jwt.verify(token, process.env.jwt_secret);
+
     req.userData = { userId: decodedToken.userId };
+
     next();
   } catch (err) {
     const error = new HttpError("Authentication failed!", 403);

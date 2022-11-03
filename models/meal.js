@@ -9,6 +9,10 @@ const mealSchema = new Schema(
     createAtDate: { type: String },
     mealType: { type: String },
     imageUrl: { type: String },
+    serving_unit:{ type: String },
+    nf_total_fat: { type: Number },
+    nf_protein: { type: Number },
+    nf_sugars: { type: Number },
   },
   {
     timestamps: true,

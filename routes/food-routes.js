@@ -1,8 +1,11 @@
 const express = require("express");
 
 const foodControllers = require("../controllers/food-controllers");
+const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
+
+router.use(checkAuth);
 
 router.get("/food", foodControllers.getFood);
 
