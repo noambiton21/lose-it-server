@@ -39,7 +39,7 @@ app.use((error, req, res, next) => {
 });
 
 const corsOptions = {
-  origin: "https://lose-it-client.herokuapp.com/",
+  origin: "http://localhost:3000/",
   credentials: true,
   optionSuccessStatus: 200,
 };
