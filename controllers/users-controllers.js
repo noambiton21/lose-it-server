@@ -103,7 +103,7 @@ const signup = async (req, res, next) => {
 
   let existingUser;
   try {
-    existingUser = await User.findOne({ email: email });
+    existingUser = await User.findOne({ email: email.toLowerCase() });
   } catch (err) {
     const error = new HttpError(
       "Signing up failed, please try again later.",
@@ -132,7 +132,7 @@ const signup = async (req, res, next) => {
   }
 
   const createdUser = new User({
-    email,
+    email: email.toLowerCase(),
     password: hashedPassword,
   });
 
@@ -171,7 +171,9 @@ const login = async (req, res, next) => {
 
   let existingUser;
   try {
-    existingUser = await User.findOne({ email: email }).select("+password");
+    existingUser = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password"
+    );
   } catch (err) {
     const error = new HttpError(
       "Logging in failed, please try again later.",
